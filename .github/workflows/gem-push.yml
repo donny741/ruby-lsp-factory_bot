@@ -22,6 +22,7 @@ jobs:
 
     - name: Publish to RubyGems
       run: |
+        [ -z "$GEM_HOST_API_KEY" ] && exit 1
         mkdir -p $HOME/.gem
         touch $HOME/.gem/credentials
         chmod 0600 $HOME/.gem/credentials
