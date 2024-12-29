@@ -32,7 +32,7 @@ RSpec.describe RubyLsp::FactoryBot::Definition do
     )
   end
 
-  context 'when navigating to trait' do
+  context "when navigating to trait" do
     let(:source) do
       <<~RUBY
         RSpec.describe User do

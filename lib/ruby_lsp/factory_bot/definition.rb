@@ -6,11 +6,11 @@ module RubyLsp
       include ::RubyLsp::Requests::Support::Common
 
       FACTORY_BOT_STRATEGIES = %i[
-          create
-          build
-          build_stubbed
-          attributes_for
-        ].flat_map { |attr| [attr, :"#{attr}_list", :"#{attr}_pair"] }.freeze
+        create
+        build
+        build_stubbed
+        attributes_for
+      ].flat_map { |attr| [attr, :"#{attr}_list", :"#{attr}_pair"] }.freeze
 
       def initialize(response_builder, uri, node_context, index, dispatcher)
         @response_builder = response_builder

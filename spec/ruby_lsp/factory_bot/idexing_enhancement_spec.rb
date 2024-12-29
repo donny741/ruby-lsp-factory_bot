@@ -39,7 +39,7 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
       expect(subject.names).to include("userFactoryBot", "sellerFactoryBot", "buyerFactoryBot")
     end
 
-    context 'when options is hash' do
+    context "when options is hash" do
       let(:factory_definition) do
         <<~RUBY
           FactoryBot.define do
@@ -55,7 +55,7 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
       end
     end
 
-    context 'when trait is defined' do
+    context "when trait is defined" do
       let(:factory_definition) do
         <<~RUBY
           FactoryBot.define do
@@ -74,7 +74,7 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
         expect(subject.names).to include("userFactoryBot", "user-t-with_emailFactoryBot")
       end
 
-      context 'with aliases' do
+      context "with aliases" do
         let(:factory_definition) do
           <<~RUBY
             FactoryBot.define do

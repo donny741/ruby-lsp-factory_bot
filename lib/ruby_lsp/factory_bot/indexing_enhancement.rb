@@ -3,7 +3,6 @@
 module RubyLsp
   module FactoryBot
     class IndexingEnhancement < RubyIndexer::Enhancement
-
       def initialize(...)
         super
         @inside_define_block = false
@@ -37,7 +36,7 @@ module RubyLsp
           @listener.add_method(
             "#{factory_name}FactoryBot",
             node.location,
-            [RubyIndexer::Entry::Signature.new([])],
+            [RubyIndexer::Entry::Signature.new([])]
           )
         end
 
@@ -91,7 +90,7 @@ module RubyLsp
           @listener.add_method(
             "#{factory_name}-t-#{trait_name}FactoryBot",
             node.location,
-            [RubyIndexer::Entry::Signature.new([])],
+            [RubyIndexer::Entry::Signature.new([])]
           )
         end
       end
