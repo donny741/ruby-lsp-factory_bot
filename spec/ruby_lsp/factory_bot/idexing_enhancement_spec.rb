@@ -8,10 +8,6 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
     index
   end
 
-  before do
-    index.register_enhancement(described_class.new)
-  end
-
   let(:index) { RubyIndexer::Index.new }
   let(:indexable_path) { RubyIndexer::IndexablePath.new(nil, "/spec/factories/user.rb") }
   let(:factory_definition) do

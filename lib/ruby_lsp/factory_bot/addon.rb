@@ -20,7 +20,6 @@ module RubyLsp
 
       def activate(global_state, _message_queue)
         @index = global_state.index
-        @index.register_enhancement(IndexingEnhancement.new)
       end
 
       def deactivate; end

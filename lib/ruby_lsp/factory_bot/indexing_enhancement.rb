@@ -2,30 +2,26 @@
 
 module RubyLsp
   module FactoryBot
-    class IndexingEnhancement
-      include RubyIndexer::Enhancement
+    class IndexingEnhancement < RubyIndexer::Enhancement
 
       FACTORIES_PATH = "spec/factories"
 
-      def on_call_node(index, owner, node, file_path, code_units_cache)
-        return unless file_path.include?(FACTORIES_PATH)
-
+      def on_call_node_enter(node)
+        @inside_define_block = true if node.message == "define"
+        return unless @inside_define_block
         return unless node.message == "factory"
 
         resolve_factory_names(node)&.each do |factory_name|
-          index.add(
-            RubyIndexer::Entry::Method.new(
-              "#{factory_name}FactoryBot",
-              file_path,
-              RubyIndexer::Location.from_prism_location(node.location, code_units_cache),
-              RubyIndexer::Location.from_prism_location(node.location, code_units_cache),
-              nil,
-              [RubyIndexer::Entry::Signature.new([])],
-              RubyIndexer::Entry::Visibility::PUBLIC,
-              owner
-            )
+          @listener.add_method(
+            "#{factory_name}FactoryBot",
+            node.location,
+            [RubyIndexer::Entry::Signature.new([])],
           )
         end
+      end
+
+      def on_call_node_leave(node)
+        @inside_define_block = false if node.message == "define"
       end
 
       private
@@ -36,16 +32,18 @@ module RubyLsp
 
         factory_names = []
         factory_names << name_from_node(arguments.first)
-        return factory_names unless arguments[1]&.type == :keyword_hash_node || arguments[1]&.type == :hash
 
-        aliases_node = arguments[1].elements.find { |element| name_from_node(element.key) == "aliases" }
+        keyword_hash_node = arguments.find { |argument| argument.type == :keyword_hash_node }
+        return factory_names unless keyword_hash_node
+
+        aliases_node = keyword_hash_node.elements.find { |element| name_from_node(element.key) == "aliases" }&.value
         return unless aliases_node
 
-        case aliases_node.value
+        case aliases_node
         when Prism::ArrayNode
-          factory_names += aliases_node.value.elements.map { |element| name_from_node(element) }
+          factory_names += aliases_node.elements.map { |element| name_from_node(element) }
         when Prism::SymbolNode, Prism::StringNode
-          factory_names << name_from_node(aliases_node.value)
+          factory_names << name_from_node(aliases_node)
         end
 
         factory_names
