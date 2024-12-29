@@ -4,27 +4,45 @@ module RubyLsp
   module FactoryBot
     class IndexingEnhancement < RubyIndexer::Enhancement
 
+      def initialize(...)
+        super
+        @inside_define_block = false
+        @factory_stack = []
+      end
+
       FACTORIES_PATH = "spec/factories"
 
       def on_call_node_enter(node)
         @inside_define_block = true if node.message == "define"
         return unless @inside_define_block
-        return unless node.message == "factory"
 
-        resolve_factory_names(node)&.each do |factory_name|
+        case node.message
+        when "factory"
+          @factory_stack << register_factory(node)
+        when "trait"
+          register_trait(node)
+        end
+      end
+
+      def on_call_node_leave(node)
+        @inside_define_block = false if node.message == "define"
+        @factory_stack.pop if node.message == "factory"
+      end
+
+      private
+
+      def register_factory(node)
+        factory_names = resolve_factory_names(node)
+        factory_names&.each do |factory_name|
           @listener.add_method(
             "#{factory_name}FactoryBot",
             node.location,
             [RubyIndexer::Entry::Signature.new([])],
           )
         end
-      end
 
-      def on_call_node_leave(node)
-        @inside_define_block = false if node.message == "define"
+        factory_names
       end
-
-      private
 
       def resolve_factory_names(node)
         arguments = node.arguments&.arguments
@@ -58,6 +76,28 @@ module RubyLsp
         when Prism::SymbolNode
           name_node.value
         end
+      end
+
+      def register_trait(node)
+        return if !current_factory_names || current_factory_names.empty?
+
+        arguments = node.arguments&.arguments
+        return unless arguments
+
+        trait_name = name_from_node(arguments.first)
+        return unless trait_name
+
+        current_factory_names.each do |factory_name|
+          @listener.add_method(
+            "#{factory_name}-t-#{trait_name}FactoryBot",
+            node.location,
+            [RubyIndexer::Entry::Signature.new([])],
+          )
+        end
+      end
+
+      def current_factory_names
+        @factory_stack.last
       end
     end
   end

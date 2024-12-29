@@ -54,5 +54,47 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
         expect(subject.names).to include("userFactoryBot", "sellerFactoryBot", "buyerFactoryBot")
       end
     end
+
+    context 'when trait is defined' do
+      let(:factory_definition) do
+        <<~RUBY
+          FactoryBot.define do
+            factory :user do
+              name { "John Doe" }
+
+              trait :with_email do
+                email { "email@example.com" }
+              end
+            end
+          end
+        RUBY
+      end
+
+      it "indexes the factory" do
+        expect(subject.names).to include("userFactoryBot", "user-t-with_emailFactoryBot")
+      end
+
+      context 'with aliases' do
+        let(:factory_definition) do
+          <<~RUBY
+            FactoryBot.define do
+              factory :user, aliases: [:seller] do
+                name { "John Doe" }
+
+                trait :with_email do
+                  email { "email@example.com" }
+                end
+              end
+            end
+          RUBY
+        end
+
+        it "indexes the factory" do
+          expect(subject.names).to include(
+            "userFactoryBot", "user-t-with_emailFactoryBot", "sellerFactoryBot", "seller-t-with_emailFactoryBot"
+          )
+        end
+      end
+    end
   end
 end

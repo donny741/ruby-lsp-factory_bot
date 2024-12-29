@@ -21,9 +21,31 @@ module RubyLsp
       end
 
       def on_symbol_node_enter(node)
-        return unless FACTORY_BOT_STRATEGIES.include?(@node_context.call_node.name)
+        call_node = @node_context.call_node
+        return unless FACTORY_BOT_STRATEGIES.include?(call_node.name)
 
+        called_factory_name = call_node.arguments&.arguments&.first&.value
+        return unless called_factory_name
+
+        return factory_location_for(node) if node.value == called_factory_name
+
+        trait_location_for(node, called_factory_name)
+      end
+
+      private
+
+      def factory_location_for(node)
         @index["#{node.value}FactoryBot"]&.each do |entry|
+          @response_builder << Interface::LocationLink.new(
+            target_uri: URI::Generic.from_path(path: entry.file_path).to_s,
+            target_range: range_from_location(entry.location),
+            target_selection_range: range_from_location(entry.name_location)
+          )
+        end
+      end
+
+      def trait_location_for(node, called_factory_name)
+        @index["#{called_factory_name}-t-#{node.value}FactoryBot"]&.each do |entry|
           @response_builder << Interface::LocationLink.new(
             target_uri: URI::Generic.from_path(path: entry.file_path).to_s,
             target_range: range_from_location(entry.location),

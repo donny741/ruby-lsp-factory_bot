@@ -17,7 +17,7 @@ run `bundle install` and restart Ruby LSP server.
 ## Features
 
 - [x] Go-to-definition for factories
-- [ ] Go-to-definition for factory traits
+- [x] Go-to-definition for factory traits
 - [ ] Completions for factories and traits
 
 ## License
