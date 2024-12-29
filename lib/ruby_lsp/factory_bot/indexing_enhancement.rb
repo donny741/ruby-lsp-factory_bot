@@ -33,7 +33,9 @@ module RubyLsp
         factory_names = []
         factory_names << name_from_node(arguments.first)
 
-        keyword_hash_node = arguments.find { |argument| argument.type == :keyword_hash_node }
+        keyword_hash_node = arguments.find do |argument|
+          argument.type == :keyword_hash_node || argument.type == :hash_node
+        end
         return factory_names unless keyword_hash_node
 
         aliases_node = keyword_hash_node.elements.find { |element| name_from_node(element.key) == "aliases" }&.value

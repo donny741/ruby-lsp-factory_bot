@@ -38,5 +38,21 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
     it "includes all names of the factory" do
       expect(subject.names).to include("userFactoryBot", "sellerFactoryBot", "buyerFactoryBot")
     end
+
+    context 'when options is hash' do
+      let(:factory_definition) do
+        <<~RUBY
+          FactoryBot.define do
+            factory :user, { aliases: %i(seller buyer) } do
+              name { "John Doe" }
+            end
+          end
+        RUBY
+      end
+
+      it "includes all names of the factory" do
+        expect(subject.names).to include("userFactoryBot", "sellerFactoryBot", "buyerFactoryBot")
+      end
+    end
   end
 end
