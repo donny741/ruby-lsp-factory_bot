@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "utils"
+
 module RubyLsp
   module FactoryBot
     class IndexingEnhancement < RubyIndexer::Enhancement
@@ -48,33 +50,26 @@ module RubyLsp
         return unless arguments
 
         factory_names = []
-        factory_names << name_from_node(arguments.first)
+        factory_names << Utils.name_from_node(arguments.first)
 
         keyword_hash_node = arguments.find do |argument|
           argument.type == :keyword_hash_node || argument.type == :hash_node
         end
         return factory_names unless keyword_hash_node
 
-        aliases_node = keyword_hash_node.elements.find { |element| name_from_node(element.key) == "aliases" }&.value
+        aliases_node = keyword_hash_node.elements.find do |element|
+          Utils.name_from_node(element.key) == "aliases"
+        end&.value
         return unless aliases_node
 
         case aliases_node
         when Prism::ArrayNode
-          factory_names += aliases_node.elements.map { |element| name_from_node(element) }
+          factory_names += aliases_node.elements.map { |element| Utils.name_from_node(element) }
         when Prism::SymbolNode, Prism::StringNode
-          factory_names << name_from_node(aliases_node)
+          factory_names << Utils.name_from_node(aliases_node)
         end
 
         factory_names
-      end
-
-      def name_from_node(name_node)
-        case name_node
-        when Prism::StringNode
-          name_node.content
-        when Prism::SymbolNode
-          name_node.value
-        end
       end
 
       def register_trait(node)
@@ -83,7 +78,7 @@ module RubyLsp
         arguments = node.arguments&.arguments
         return unless arguments
 
-        trait_name = name_from_node(arguments.first)
+        trait_name = Utils.name_from_node(arguments.first)
         return unless trait_name
 
         current_factory_names.each do |factory_name|

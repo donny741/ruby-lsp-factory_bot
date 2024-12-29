@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require_relative "utils"
+
 module RubyLsp
   module FactoryBot
     class Definition
@@ -24,7 +26,7 @@ module RubyLsp
         call_node = @node_context.call_node
         return unless FACTORY_BOT_STRATEGIES.include?(call_node.name)
 
-        called_factory_name = call_node.arguments&.arguments&.first&.value
+        called_factory_name = Utils.name_from_node(call_node.arguments&.arguments&.first)
         return unless called_factory_name
 
         return factory_location_for(node) if node.value == called_factory_name
