@@ -5,7 +5,12 @@ module RubyLsp
     class Definition
       include ::RubyLsp::Requests::Support::Common
 
-      RSPEC_STRATEGIES = %i[create create_list build build_list build_stubbed attributes_for].freeze
+      FACTORY_BOT_STRATEGIES = %i[
+          create
+          build
+          build_stubbed
+          attributes_for
+        ].flat_map { |attr| [attr, :"#{attr}_list", :"#{attr}_pair"] }.freeze
 
       def initialize(response_builder, uri, node_context, index, dispatcher)
         @response_builder = response_builder
@@ -16,7 +21,7 @@ module RubyLsp
       end
 
       def on_symbol_node_enter(node)
-        return unless RSPEC_STRATEGIES.include?(@node_context.call_node.name)
+        return unless FACTORY_BOT_STRATEGIES.include?(@node_context.call_node.name)
 
         @index["#{node.value}FactoryBot"]&.each do |entry|
           @response_builder << Interface::LocationLink.new(
