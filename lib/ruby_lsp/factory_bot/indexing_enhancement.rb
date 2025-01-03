@@ -60,7 +60,7 @@ module RubyLsp
         aliases_node = keyword_hash_node.elements.find do |element|
           Utils.name_from_node(element.key) == "aliases"
         end&.value
-        return unless aliases_node
+        return factory_names unless aliases_node
 
         case aliases_node
         when Prism::ArrayNode

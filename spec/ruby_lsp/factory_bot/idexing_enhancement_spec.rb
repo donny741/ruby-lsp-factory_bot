@@ -24,6 +24,22 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
     expect(subject.names).to include("userFactoryBot")
   end
 
+  context 'when different class specified' do
+    let(:factory_definition) do
+      <<~RUBY
+        FactoryBot.define do
+          factory :user, class: User do
+            name { "John Doe" }
+          end
+        end
+      RUBY
+    end
+
+    it "indexes the factory" do
+      expect(subject.names).to include("userFactoryBot")
+    end
+  end
+
   context "when aliases defined" do
     let(:factory_definition) do
       <<~RUBY
