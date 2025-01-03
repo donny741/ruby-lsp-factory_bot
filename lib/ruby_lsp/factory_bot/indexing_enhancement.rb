@@ -22,6 +22,8 @@ module RubyLsp
           @factory_stack << register_factory(node)
         when "trait"
           register_trait(node)
+        when "sequence"
+          register_sequence(node) if @factory_stack.empty?
         end
       end
 
@@ -92,6 +94,20 @@ module RubyLsp
 
       def current_factory_names
         @factory_stack.last
+      end
+
+      def register_sequence(node)
+        arguments = node.arguments&.arguments
+        return unless arguments
+
+        sequence_name = Utils.name_from_node(arguments.first)
+        return unless sequence_name
+
+        @listener.add_method(
+          "#{sequence_name}-s-FactoryBot",
+          node.location,
+          [RubyIndexer::Entry::Signature.new([])]
+        )
       end
     end
   end

@@ -108,4 +108,47 @@ RSpec.describe RubyLsp::FactoryBot::Definition do
       end
     end
   end
+
+  context "when navigating to sequence" do
+    let(:source) do
+      <<~RUBY
+        RSpec.describe User do
+          let(:user_id) { generate(:user_id) }
+        end
+
+        FactoryBot.define do
+          sequence(:user_id)
+        end
+      RUBY
+    end
+    let(:location) { { line: 1, character: 30 } }
+
+    it "returns trait definition location" do
+      expect(subject.first).to have_attributes(
+        target_uri: include(uri.path),
+        target_range: have_attributes(
+          start: have_attributes(line: 5, character: 2),
+          end: have_attributes(line: 5, character: 20)
+        )
+      )
+    end
+
+    context "when inside factory definition" do
+      let(:source) do
+        <<~RUBY
+          RSpec.describe User do
+            let(:user_id) { generate(:user_id) }
+          end
+
+          FactoryBot.define do
+            factory :order do
+              sequence(:user_id)
+            end
+          end
+        RUBY
+      end
+
+      it { is_expected.to be_empty }
+    end
+  end
 end

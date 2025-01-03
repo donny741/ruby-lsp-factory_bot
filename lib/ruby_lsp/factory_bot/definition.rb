@@ -23,15 +23,12 @@ module RubyLsp
       end
 
       def on_symbol_node_enter(node)
-        call_node = @node_context.call_node
-        return unless FACTORY_BOT_STRATEGIES.include?(call_node.name)
+        return unless (call_node = @node_context&.call_node)
 
-        called_factory_name = Utils.name_from_node(call_node.arguments&.arguments&.first)
-        return unless called_factory_name
-
-        return factory_location_for(node.value) if node.value == called_factory_name
-
-        trait_location_for(node.value, called_factory_name)
+        case call_node.name
+        when *FACTORY_BOT_STRATEGIES then factory_or_trait_location_for(call_node, node)
+        when :generate then sequence_location_for(node.value)
+        end
       end
 
       def on_call_node_enter(node)
@@ -42,6 +39,15 @@ module RubyLsp
       end
 
       private
+
+      def factory_or_trait_location_for(call_node, node)
+        called_factory_name = Utils.name_from_node(call_node.arguments&.arguments&.first)
+        return unless called_factory_name
+
+        return factory_location_for(node.value) if node.value == called_factory_name
+
+        trait_location_for(node.value, called_factory_name)
+      end
 
       def factory_location_for(factory_name)
         @index["#{factory_name}FactoryBot"]&.each do |entry|
@@ -55,6 +61,16 @@ module RubyLsp
 
       def trait_location_for(trait_name, called_factory_name)
         @index["#{called_factory_name}-t-#{trait_name}FactoryBot"]&.each do |entry|
+          @response_builder << Interface::LocationLink.new(
+            target_uri: URI::Generic.from_path(path: entry.file_path).to_s,
+            target_range: range_from_location(entry.location),
+            target_selection_range: range_from_location(entry.name_location)
+          )
+        end
+      end
+
+      def sequence_location_for(sequence_name)
+        @index["#{sequence_name}-s-FactoryBot"]&.each do |entry|
           @response_builder << Interface::LocationLink.new(
             target_uri: URI::Generic.from_path(path: entry.file_path).to_s,
             target_range: range_from_location(entry.location),
