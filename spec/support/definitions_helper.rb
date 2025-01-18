@@ -3,7 +3,7 @@
 module DefinitionsHelper
   def generate_definitions_for_source(source, position, uri = nil)
     with_server(source, uri) do |server, uri|
-      server.global_state.index.index_single(RubyIndexer::IndexablePath.new(nil, uri.path), source)
+      server.global_state.index.index_single(URI::Generic.from_path(path: uri.path), source)
       server.process_message(
         id: 1,
         method: "textDocument/definition",

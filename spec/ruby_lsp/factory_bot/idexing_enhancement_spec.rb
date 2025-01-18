@@ -9,7 +9,7 @@ RSpec.describe RubyLsp::FactoryBot::IndexingEnhancement do
   end
 
   let(:index) { RubyIndexer::Index.new }
-  let(:indexable_path) { RubyIndexer::IndexablePath.new(nil, "/spec/factories/user.rb") }
+  let(:indexable_path) { URI::Generic.from_path(path: "/spec/factories/user.rb") }
   let(:factory_definition) do
     <<~RUBY
       FactoryBot.define do
